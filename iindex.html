@@ -1,0 +1,655 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Job Connect</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow column. Header with a flag-colour stripe, a compact search hero, job rows with a deadline column, and a detail view that pairs the description with a sticky apply card. */
+:root{
+  --bg:#F3F7F4;
+  --surface:#FFFFFF;
+  --ink:#12231A;
+  --muted:#55685D;
+  --line:#D6E0D9;
+  --accent:#1B6B43;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#E1F0E7;
+  --sky:#086699;
+  --sky-soft:#DFF0F9;
+  --warn-bg:#FFF1BF;
+  --warn-fg:#5E4700;
+  --danger:#B3372B;
+  --focus:#086699;
+  --font-display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --font-body:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1712; --surface:#15231C; --ink:#E7F0EB; --muted:#9BAFA4; --line:#27392F;
+    --accent:#52C48A; --accent-ink:#052414; --accent-soft:#17352A;
+    --sky:#6CC4F0; --sky-soft:#0F2C3B;
+    --warn-bg:#3B3310; --warn-fg:#F4D45E;
+    --danger:#FF8F80; --focus:#6CC4F0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1712; --surface:#15231C; --ink:#E7F0EB; --muted:#9BAFA4; --line:#27392F;
+  --accent:#52C48A; --accent-ink:#052414; --accent-soft:#17352A;
+  --sky:#6CC4F0; --sky-soft:#0F2C3B;
+  --warn-bg:#3B3310; --warn-fg:#F4D45E;
+  --danger:#FF8F80; --focus:#6CC4F0;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--font-body);font-size:15px;line-height:1.55;
+  padding-block:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:880px;margin:0 auto;padding-bottom:40px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+
+/* Header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:21px;letter-spacing:-.01em;color:var(--ink);text-decoration:none}
+.brand svg{width:30px;height:30px;color:var(--accent-ink);flex:none}
+.top-actions{display:flex;align-items:center;gap:10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.05em;padding:6px 11px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.navlink{font-weight:600;font-size:14px;text-decoration:none;padding:6px 2px}
+.navlink:hover{text-decoration:underline}
+.stripe{height:8px;border-radius:2px;background-repeat:repeat-x;background-size:auto 100%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='10' viewBox='0 0 36 10'%3E%3Cpath d='M0 10 6 0l6 10z' fill='%2300A1DE'/%3E%3Cpath d='M12 10 18 0l6 10z' fill='%23FAD201'/%3E%3Cpath d='M24 10 30 0l6 10z' fill='%2320603D'/%3E%3C/svg%3E")}
+
+/* Hero + filters */
+.hero{padding-block:28px 4px}
+.eyebrow{font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(32px,7vw,50px);line-height:1.03;letter-spacing:-.025em;margin:8px 0 10px;text-wrap:balance}
+.lede{color:var(--muted);margin-bottom:18px;max-width:52ch}
+.search{display:flex;gap:8px}
+.field{display:grid;gap:6px}
+.field label,.flabel{font-size:13px;font-weight:600;color:var(--muted)}
+input,select,textarea{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:16px}
+textarea{min-height:110px;resize:vertical;line-height:1.5}
+.search input{flex:1;min-width:0}
+.selects{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
+.tchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tchip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;cursor:pointer}
+.tchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* Buttons */
+.btn{height:46px;padding:0 18px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;white-space:nowrap}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--accent);filter:none}
+.btn.small{height:36px;padding:0 12px;font-size:13px}
+.btn.block{width:100%}
+.btn.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn.dangerfill{background:var(--danger);border-color:var(--danger);color:var(--bg)}
+.linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font-weight:600;text-decoration:underline;cursor:pointer}
+
+/* Results */
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:22px 0 10px}
+.count{font-weight:700}
+.jobs{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.job{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-decoration:none;color:inherit}
+.job:hover{border-color:var(--accent)}
+.job h3,.arow h3{font-family:var(--font-display);font-weight:700;font-size:18px;line-height:1.25;letter-spacing:-.005em}
+.jmain{min-width:0}
+.sub{color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:8px}
+.chip{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-weight:600;font-size:12px;background:var(--sky-soft);color:var(--sky)}
+.chip.plain{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.chip.gone{background:var(--warn-bg);color:var(--warn-fg)}
+.posted{color:var(--muted);font-size:12.5px}
+.dl{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
+.pill{display:inline-flex;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:12.5px}
+.dl.warn .pill{background:var(--warn-bg);color:var(--warn-fg)}
+.date{color:var(--muted);font-size:12.5px}
+.empty{padding:36px 16px;text-align:center;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-family:var(--font-display);font-size:18px;margin-bottom:4px}
+
+/* Detail */
+.back{display:inline-block;margin:6px 0 14px;font-weight:600;text-decoration:none}
+.back:hover{text-decoration:underline}
+.jhead h1{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,5.5vw,38px);line-height:1.08;letter-spacing:-.02em;margin:12px 0 6px;text-wrap:balance}
+.company{color:var(--muted);font-size:16px;margin-bottom:22px}
+.jgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.sec{min-width:0}
+.sec h2{font-family:var(--font-display);font-weight:700;font-size:19px;margin-bottom:8px}
+.sec p{margin-bottom:10px;max-width:65ch}
+.sec ul{margin:0 0 22px;padding-left:20px;display:grid;gap:6px;max-width:65ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.apply{display:grid;gap:16px;position:sticky;top:16px;min-width:0}
+.dlbig{display:grid;gap:6px;justify-items:start}
+.dlbig .flabel{text-transform:uppercase;letter-spacing:.06em;font-size:11.5px}
+.dlbig .when{font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-.01em}
+.dlbig.warn .pill{background:var(--warn-bg);color:var(--warn-fg)}
+.how{display:grid;gap:10px}
+.how h2{font-family:var(--font-display);font-weight:700;font-size:16px}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+.cval{display:grid;min-width:0}
+.clabel{font-size:12px;color:var(--muted);font-weight:600}
+.val{font-weight:600;user-select:all;-webkit-user-select:all;overflow-wrap:anywhere}
+.share{display:grid;gap:8px;padding-top:4px;border-top:1px solid var(--line);padding-top:16px}
+.notice{padding:12px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn-fg);font-weight:600}
+.note{padding:12px 14px;border-radius:10px;background:var(--sky-soft);color:var(--sky);font-weight:500;margin-bottom:16px}
+
+/* Admin */
+.narrow{max-width:420px;margin:24px auto 0}
+.pg{font-family:var(--font-display);font-weight:700;font-size:30px;line-height:1.1;letter-spacing:-.02em}
+.ahead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 0 14px}
+.form{display:grid;gap:14px}
+.form h2{font-family:var(--font-display);font-weight:700;font-size:20px}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.hint{font-size:12.5px;color:var(--muted)}
+.msg{color:var(--danger);font-weight:600}
+.msg:empty{display:none}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.listing{margin-top:28px;display:grid;gap:12px}
+.listing h2{font-family:var(--font-display);font-weight:700;font-size:20px}
+.arow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.amain{min-width:0}
+.arow h3 a{color:var(--ink);text-decoration:none}
+.arow h3 a:hover{text-decoration:underline}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Footer + toast */
+.foot{margin-top:36px;display:grid;gap:10px;color:var(--muted);font-size:13px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;z-index:20;text-align:center}
+
+@media (max-width:760px){
+  .jgrid{grid-template-columns:minmax(0,1fr)}
+  .apply{position:static}
+}
+@media (max-width:520px){
+  .job,.arow{grid-template-columns:minmax(0,1fr)}
+  .dl{flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;white-space:normal;flex-wrap:wrap}
+  .brand{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div id="root" class="wrap"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Dictionaries ---------- */
+var MONTHS={
+  en:['January','February','March','April','May','June','July','August','September','October','November','December'],
+  rw:['Mutarama','Gashyantare','Werurwe','Mata','Gicurasi','Kamena','Nyakanga','Kanama','Nzeri','Ukwakira','Ugushyingo','Ukuboza']
+};
+var CATS=['it','health','ngo','finance','education','agri','hospitality','construction','marketing','other'];
+var LOCS=['kigali','huye','musanze','rubavu','rusizi','nyagatare','muhanga','rwamagana','remote'];
+var TYPES=['full','part','contract','intern'];
+
+var T={
+ en:{
+  navAdmin:'Admin',navJobs:'Jobs',
+  open_one:'{n} open job',open_many:'{n} open jobs',
+  headline:'Find work in Rwanda',
+  lede:'Jobs across Rwanda. Apply by email, phone or WhatsApp.',
+  searchLabel:'Search jobs',searchPh:'Job title, company or skill',searchBtn:'Search',
+  fCat:'Category',fLoc:'Location',fType:'Job type',
+  allCats:'All categories',allLocs:'All locations',allTypes:'All types',
+  results_one:'{n} job',results_many:'{n} jobs',clear:'Clear filters',
+  emptyTitle:'No jobs match your search',emptyHint:'Try a different word or clear the filters.',
+  postedToday:'Posted today',postedYesterday:'Posted yesterday',postedDays:'Posted {n} days ago',
+  closesIn:'Closes in {n} days',closesToday:'Closes today',closesTomorrow:'Closes tomorrow',closed:'Closed',
+  deadline:'Application deadline',back:'← All jobs',about:'About the job',reqs:'Requirements',
+  howApply:'How to apply',lEmail:'Email',lPhone:'Phone / WhatsApp',applyOnline:'Apply online',openWa:'Chat on WhatsApp',
+  shareWa:'Share on WhatsApp',copyLink:'Copy link',copy:'Copy',copied:'Copied',
+  copyFail:'Could not copy. Press and hold the text to copy it.',
+  closedNote:'This job has closed. Applications are no longer accepted.',notFound:'This job is not available.',
+  adminTitle:'Admin',pinLabel:'Enter PIN',unlock:'Unlock',wrongPin:'Wrong PIN. Try again.',
+  lock:'Lock',
+  previewNote:'Preview mode: jobs you add here are saved on this device only. The live site will show them to everyone.',
+  formNew:'Post a job',formEdit:'Edit job',
+  lTitle:'Job title',lCompany:'Company',lCat:'Category',lLoc:'Location',lType:'Job type',lDeadline:'Deadline',
+  lDesc:'Description',lReq:'Requirements',hReq:'One per line',lApply:'How to apply',hApply:'Fill in at least one',
+  lLink:'Application link',select:'Select…',
+  publish:'Publish job',save:'Save changes',cancel:'Cancel',
+  errRequired:'Fill in: {fields}.',errApply:'Add an email, phone number or application link.',
+  errLink:'The application link must start with https://',errEmail:'Check the email address.',
+  errPast:'The deadline cannot be in the past.',
+  published:'Job published',saved:'Changes saved',deleted:'Job deleted',
+  yourListings:'Your listings ({n})',edit:'Edit',delete:'Delete',confirmDel:'Confirm delete',expired:'Expired',
+  noListings:'No listings yet. Post your first job above.',
+  footer:'Job Connect · Jobs in Rwanda',
+  cat_it:'IT & Technology',cat_health:'Health',cat_ngo:'NGO & Development',cat_finance:'Banking & Finance',
+  cat_education:'Education',cat_agri:'Agriculture',cat_hospitality:'Hospitality & Tourism',
+  cat_construction:'Engineering & Construction',cat_marketing:'Sales & Marketing',cat_other:'Other',
+  loc_kigali:'Kigali',loc_huye:'Huye',loc_musanze:'Musanze',loc_rubavu:'Rubavu',loc_rusizi:'Rusizi',
+  loc_nyagatare:'Nyagatare',loc_muhanga:'Muhanga',loc_rwamagana:'Rwamagana',loc_remote:'Remote',
+  type_full:'Full-time',type_part:'Part-time',type_contract:'Contract',type_intern:'Internship'
+ },
+ rw:{
+  navAdmin:'Ubuyobozi',navJobs:'Akazi',
+  open_one:'Akazi gafunguye: {n}',open_many:'Akazi gafunguye: {n}',
+  headline:'Shaka akazi mu Rwanda',
+  lede:'Akazi hirya no hino mu Rwanda. Saba ukoresheje imeri, telefoni cyangwa WhatsApp.',
+  searchLabel:'Shakisha akazi',searchPh:'Umutwe w’akazi, ikigo cyangwa ubumenyi',searchBtn:'Shakisha',
+  fCat:'Icyiciro',fLoc:'Ahantu',fType:'Ubwoko bw’akazi',
+  allCats:'Ibyiciro byose',allLocs:'Ahantu hose',allTypes:'Ubwoko bwose',
+  results_one:'Akazi kabonetse: {n}',results_many:'Akazi kabonetse: {n}',clear:'Siba ayo wahisemo',
+  emptyTitle:'Nta kazi kabonetse',emptyHint:'Gerageza irindi jambo cyangwa usibe ayo wahisemo.',
+  postedToday:'Byashyizweho uyu munsi',postedYesterday:'Byashyizweho ejo hashize',postedDays:'Byashyizweho hashize iminsi {n}',
+  closesIn:'Hasigaye iminsi {n}',closesToday:'Birangira uyu munsi',closesTomorrow:'Birangira ejo',closed:'Cyararangiye',
+  deadline:'Itariki ntarengwa yo gusaba',back:'← Akazi kose',about:'Ibisobanuro ku kazi',reqs:'Ibisabwa',
+  howApply:'Uko wasaba akazi',lEmail:'Imeri',lPhone:'Telefoni / WhatsApp',applyOnline:'Saba kuri murandasi',openWa:'Andikira kuri WhatsApp',
+  shareWa:'Sangiza kuri WhatsApp',copyLink:'Kopora umurongo',copy:'Kopora',copied:'Byakoporowe',
+  copyFail:'Ntibyakoporowe. Kanda ukomeze ku nyandiko uyikopore.',
+  closedNote:'Aka kazi karafunzwe. Ntibakiri kwakira abasaba.',notFound:'Aka kazi ntikabonetse.',
+  adminTitle:'Ubuyobozi',pinLabel:'Andika PIN',unlock:'Fungura',wrongPin:'PIN siyo. Ongera ugerageze.',
+  lock:'Funga',
+  previewNote:'Uburyo bwo kureba mbere: akazi ushyizeho kabikwa kuri iki gikoresho gusa. Urubuga nyarwo ruzakagaragariza buri wese.',
+  formNew:'Shyiraho akazi',formEdit:'Hindura akazi',
+  lTitle:'Umutwe w’akazi',lCompany:'Ikigo',lCat:'Icyiciro',lLoc:'Ahantu',lType:'Ubwoko bw’akazi',lDeadline:'Itariki ntarengwa',
+  lDesc:'Ibisobanuro',lReq:'Ibisabwa',hReq:'Kimwe kuri buri murongo',lApply:'Uko basaba',hApply:'Uzuza nibura kimwe',
+  lLink:'Umurongo wo gusaba',select:'Hitamo…',
+  publish:'Shyira akazi ku rubuga',save:'Bika impinduka',cancel:'Hagarika',
+  errRequired:'Uzuza: {fields}.',errApply:'Shyiramo imeri, nimero ya telefoni cyangwa umurongo wo gusaba.',
+  errLink:'Umurongo wo gusaba ugomba gutangira na https://',errEmail:'Genzura imeri.',
+  errPast:'Itariki ntarengwa ntishobora kuba yararangiye.',
+  published:'Akazi karashyizweho',saved:'Impinduka zabitswe',deleted:'Akazi karasibwe',
+  yourListings:'Akazi washyizeho ({n})',edit:'Hindura',delete:'Siba',confirmDel:'Emeza gusiba',expired:'Cyararangiye',
+  noListings:'Nta kazi urashyiraho. Shyiraho akazi ka mbere hejuru.',
+  footer:'Job Connect · Akazi mu Rwanda',
+  cat_it:'Ikoranabuhanga',cat_health:'Ubuzima',cat_ngo:'Imiryango n’iterambere',cat_finance:'Imari n’amabanki',
+  cat_education:'Uburezi',cat_agri:'Ubuhinzi',cat_hospitality:'Ubukerarugendo n’amahoteli',
+  cat_construction:'Ubwubatsi n’ubuhanga',cat_marketing:'Ubucuruzi n’iyamamaza',cat_other:'Ibindi',
+  loc_kigali:'Kigali',loc_huye:'Huye',loc_musanze:'Musanze',loc_rubavu:'Rubavu',loc_rusizi:'Rusizi',
+  loc_nyagatare:'Nyagatare',loc_muhanga:'Muhanga',loc_rwamagana:'Rwamagana',loc_remote:'Gukorera kure',
+  type_full:'Igihe cyose',type_part:'Igihe gito',type_contract:'Amasezerano',type_intern:'Kwimenyereza umwuga'
+ }
+};
+
+/* ---------- Dates ---------- */
+function pad(n){return n<10?'0'+n:''+n}
+function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function today0(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function parseISO(s){var p=String(s).split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
+function daysBetween(a,b){return Math.round((b-a)/86400000)}
+function daysLeft(job){return daysBetween(today0(),parseISO(job.deadline))}
+
+/* ---------- Sample data (dates are relative to today so the preview never goes stale) ---------- */
+function seedJobs(){
+  var t0=today0();
+  function d(n){return iso(addDays(t0,n))}
+  return [
+   {id:1,title:'Full-Stack Developer',company:'Imbere Tech Hub',cat:'it',loc:'kigali',type:'full',posted:d(-1),deadline:d(12),
+    desc:'Build and maintain web apps for clients in finance and retail. You will work in a small team in Kigali, ship every week and review code from junior developers.',
+    req:['Degree in Computer Science or a related field','2+ years with JavaScript and a SQL database','Clear written English; Kinyarwanda and French are a plus','A portfolio or GitHub link'],
+    email:'careers@example.com',phone:'',link:''},
+   {id:2,title:'Registered Nurse, Maternity Ward',company:'Kigali Health Network',cat:'health',loc:'kigali',type:'full',posted:d(-2),deadline:d(20),
+    desc:'Care for mothers and newborns on a 30-bed maternity ward. Shifts rotate between day and night, with one rest day after each night block.',
+    req:['Nursing diploma (A2 or A1)','Valid registration with the national nurses and midwives council','1+ year on a maternity or general ward','Willing to work rotating shifts'],
+    email:'hr@example.com',phone:'0788 000 101',link:''},
+   {id:3,title:'Monitoring & Evaluation Officer',company:'Twiyubake Development Foundation',cat:'ngo',loc:'musanze',type:'contract',posted:d(-3),deadline:d(7),
+    desc:'12-month contract supporting a livelihoods programme in Northern Province. You will collect and clean field data, prepare quarterly reports and train partner staff.',
+    req:['Degree in statistics, economics or social sciences','2+ years of M&E experience with an NGO','Strong Excel skills; KoboToolbox or similar is a plus','Fluent in Kinyarwanda and English','Willing to travel to the field weekly'],
+    email:'jobs@example.com',phone:'',link:''},
+   {id:4,title:'Loan Officer',company:'Umurage Microfinance',cat:'finance',loc:'huye',type:'full',posted:d(-4),deadline:d(2),
+    desc:'Visit small businesses and farmers around Huye, assess loan applications and follow up on repayments. Training is provided in the first month.',
+    req:['Diploma or degree in finance, accounting or business','Comfortable travelling by motorbike','Good Kinyarwanda and basic English'],
+    email:'',phone:'0788 000 102',link:''},
+   {id:5,title:'Primary School Teacher (Maths & Science)',company:'Ubumenyi Academy',cat:'education',loc:'rubavu',type:'full',posted:d(-5),deadline:d(15),
+    desc:'Teach Maths and Science to Primary 4 to 6 in a private school near Lake Kivu. Lessons are in English, with Kinyarwanda support where needed.',
+    req:['Teaching qualification (A2 or higher)','Good command of English','At least 1 year of classroom experience'],
+    email:'admissions@example.com',phone:'',link:''},
+   {id:6,title:'Agronomist',company:'Isoko Farmers’ Cooperative',cat:'agri',loc:'nyagatare',type:'full',posted:d(-1),deadline:d(10),
+    desc:'Advise 600 member farmers on maize and bean production, run field demonstrations and help the cooperative plan inputs each season.',
+    req:['Degree in agronomy or crop science','Experience with smallholder farmers','Driving licence (category A or B)'],
+    email:'',phone:'0788 000 103',link:'https://example.com/careers'},
+   {id:7,title:'Front Desk Associate',company:'Ikirenga Lodge',cat:'hospitality',loc:'musanze',type:'full',posted:d(-6),deadline:d(5),
+    desc:'Welcome guests, manage bookings and coordinate gorilla trekking transfers with our tour partners. Staff accommodation is available.',
+    req:['Experience in a hotel or lodge front office','Fluent English; French is an advantage','Friendly, organised and reliable'],
+    email:'stay@example.com',phone:'',link:''},
+   {id:8,title:'Marketing Intern',company:'Kigali Brand Studio',cat:'marketing',loc:'kigali',type:'intern',posted:d(0),deadline:d(18),
+    desc:'Three-month internship supporting social media, small events and client reports for local brands. A monthly stipend is paid.',
+    req:['Final-year student or recent graduate','Creative, with good writing in English or Kinyarwanda','Basic design skills (Canva or similar)'],
+    email:'hello@example.com',phone:'',link:''},
+   {id:9,title:'Site Engineer (Civil)',company:'Urubuto Construction Ltd',cat:'construction',loc:'muhanga',type:'contract',posted:d(-7),deadline:d(9),
+    desc:'Supervise road and drainage works on a district project. You will check quality, measure progress and report to the project manager.',
+    req:['Degree in Civil Engineering','3+ years of site experience','Registered with the Institution of Engineers Rwanda','Able to read drawings and use AutoCAD'],
+    email:'projects@example.com',phone:'0788 000 104',link:''},
+   {id:10,title:'Customer Support Agent',company:'Hanga Online Services',cat:'it',loc:'remote',type:'part',posted:d(-2),deadline:d(14),
+    desc:'Answer customer questions by chat and phone for four hours a day. Work from home with your own phone and internet connection.',
+    req:['Fluent Kinyarwanda and English','Fast, accurate typing','A quiet place to work'],
+    email:'',phone:'',link:'https://example.com/support-jobs'},
+   {id:11,title:'Data Entry Clerk',company:'Amahoro Records Office',cat:'other',loc:'kigali',type:'contract',posted:d(-20),deadline:d(-2),
+    desc:'Enter paper records into a database for six weeks. This listing has already expired, so visitors do not see it.',
+    req:['Fast and accurate typing','Basic Excel'],
+    email:'records@example.com',phone:'',link:''}
+  ];
+}
+
+/* ---------- State + storage ---------- */
+var KEY='jobconnect.jobs.v1', LANGKEY='jobconnect.lang', PIN='2468';
+function loadJobs(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var a=JSON.parse(raw);if(Array.isArray(a))return a}}catch(e){}
+  return null;
+}
+function saveJobs(){try{localStorage.setItem(KEY,JSON.stringify(state.jobs))}catch(e){}}
+var state={lang:'en',q:'',cat:'',loc:'',type:'',jobs:loadJobs()||seedJobs(),unlocked:false,editingId:null,confirmDel:null};
+try{var sl=localStorage.getItem(LANGKEY);if(sl==='rw'||sl==='en')state.lang=sl}catch(e){}
+document.documentElement.lang=state.lang;
+
+/* ---------- Helpers ---------- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function t(k,v){
+  var s=T[state.lang][k];if(s==null)s=T.en[k];if(s==null)return k;
+  if(v)for(var x in v)s=s.split('{'+x+'}').join(v[x]);
+  return s;
+}
+function fmtDate(s){var d=parseISO(s);return d.getDate()+' '+MONTHS[state.lang][d.getMonth()]+' '+d.getFullYear()}
+function closesText(n){if(n<0)return t('closed');if(n===0)return t('closesToday');if(n===1)return t('closesTomorrow');return t('closesIn',{n:n})}
+function postedText(j){var n=daysBetween(parseISO(j.posted),today0());if(n<=0)return t('postedToday');if(n===1)return t('postedYesterday');return t('postedDays',{n:n})}
+function isOpen(j){return daysLeft(j)>=0}
+function byNewest(a,b){return a.posted<b.posted?1:a.posted>b.posted?-1:b.id-a.id}
+function nextId(){return state.jobs.reduce(function(m,j){return Math.max(m,j.id)},0)+1}
+function lines(s){return String(s||'').split(/\n+/).map(function(x){return x.trim()}).filter(Boolean)}
+function waDigits(p){var d=String(p).replace(/\D/g,'');if(d.indexOf('250')===0)return d;if(d.charAt(0)==='0')return '250'+d.slice(1);return d}
+function opts(keys,prefix,sel,first){
+  return '<option value="">'+esc(first)+'</option>'+keys.map(function(k){return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+esc(t(prefix+k))+'</option>'}).join('');
+}
+var toastTimer;
+function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.hidden=true},2400)}
+function fallbackCopy(text){
+  var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');
+  ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.select();
+  var ok=false;try{ok=document.execCommand('copy')}catch(e){}
+  document.body.removeChild(ta);return ok;
+}
+function copyText(text){
+  var done=function(){toast(t('copied'))};
+  var fail=function(){if(fallbackCopy(text))done();else toast(t('copyFail'))};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fail);return}}catch(e){}
+  fail();
+}
+
+/* ---------- Routing ---------- */
+function route(){
+  var h=location.hash||'',m;
+  if(h==='#admin')return {name:'admin'};
+  if((m=/^#job-(\d+)$/.exec(h)))return {name:'job',id:parseInt(m[1],10)};
+  return {name:'home'};
+}
+
+var LOGO='<svg viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="var(--accent)"/><circle cx="11" cy="15" r="4.2" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="19" cy="15" r="4.2" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>';
+
+function header(r){
+  var adminNow=r.name==='admin';
+  return '<header class="top"><a class="brand" href="#jobs">'+LOGO+'<span>Job Connect</span></a>'+
+    '<div class="top-actions"><div class="seg" role="group" aria-label="Language">'+
+    '<button type="button" data-lang="en" aria-pressed="'+(state.lang==='en')+'">EN</button>'+
+    '<button type="button" data-lang="rw" aria-pressed="'+(state.lang==='rw')+'">RW</button></div>'+
+    '<a class="navlink" href="'+(adminNow?'#jobs':'#admin')+'">'+esc(t(adminNow?'navJobs':'navAdmin'))+'</a></div></header>'+
+    '<div class="stripe" aria-hidden="true"></div>';
+}
+function footer(){
+  return '<footer class="foot"><div class="stripe" aria-hidden="true"></div><div>'+esc(t('footer'))+'</div><div>&copy; 2027 Corneille Wacu. All rights reserved.</div></footer>';
+}
+
+/* ---------- Home ---------- */
+function visible(){
+  var q=(state.q||'').trim().toLowerCase();
+  return state.jobs.filter(function(j){
+    if(!isOpen(j))return false;
+    if(state.cat&&j.cat!==state.cat)return false;
+    if(state.loc&&j.loc!==state.loc)return false;
+    if(state.type&&j.type!==state.type)return false;
+    if(q){
+      var hay=[j.title,j.company,t('loc_'+j.loc),t('cat_'+j.cat),t('type_'+j.type)].concat(j.req||[]).join(' ').toLowerCase();
+      if(hay.indexOf(q)<0)return false;
+    }
+    return true;
+  }).sort(byNewest);
+}
+function jobCard(j){
+  var n=daysLeft(j);
+  return '<li><a class="job" href="#job-'+j.id+'"><div class="jmain"><h3>'+esc(j.title)+'</h3>'+
+    '<p class="sub">'+esc(j.company)+' &middot; '+esc(t('loc_'+j.loc))+'</p>'+
+    '<p class="tags"><span class="chip">'+esc(t('type_'+j.type))+'</span><span class="chip plain">'+esc(t('cat_'+j.cat))+'</span><span class="posted">'+esc(postedText(j))+'</span></p></div>'+
+    '<div class="dl'+(n<=3?' warn':'')+'"><span class="pill">'+esc(closesText(n))+'</span><span class="date">'+esc(fmtDate(j.deadline))+'</span></div></a></li>';
+}
+function updateList(){
+  var box=document.getElementById('results');if(!box)return;
+  var list=visible();
+  document.getElementById('count').textContent=t(list.length===1?'results_one':'results_many',{n:list.length});
+  document.getElementById('clear').hidden=!(state.q||state.cat||state.loc||state.type);
+  box.innerHTML=list.length?'<ul class="jobs">'+list.map(jobCard).join('')+'</ul>':'<div class="empty"><strong>'+esc(t('emptyTitle'))+'</strong>'+esc(t('emptyHint'))+'</div>';
+}
+function viewHome(){
+  var open=state.jobs.filter(isOpen).length;
+  var chips='<button type="button" class="tchip" data-type="" aria-pressed="'+(state.type==='')+'">'+esc(t('allTypes'))+'</button>'+
+    TYPES.map(function(k){return '<button type="button" class="tchip" data-type="'+k+'" aria-pressed="'+(state.type===k)+'">'+esc(t('type_'+k))+'</button>'}).join('');
+  var html='<section class="hero"><p class="eyebrow">'+esc(t(open===1?'open_one':'open_many',{n:open}))+'</p>'+
+    '<h1>'+esc(t('headline'))+'</h1><p class="lede">'+esc(t('lede'))+'</p>'+
+    '<form class="search" id="searchForm" role="search"><label class="sr" for="q">'+esc(t('searchLabel'))+'</label>'+
+    '<input id="q" type="search" autocomplete="off" placeholder="'+esc(t('searchPh'))+'" value="'+esc(state.q)+'">'+
+    '<button class="btn" type="submit">'+esc(t('searchBtn'))+'</button></form>'+
+    '<div class="selects"><div class="field"><label for="fCat">'+esc(t('fCat'))+'</label><select id="fCat">'+opts(CATS,'cat_',state.cat,t('allCats'))+'</select></div>'+
+    '<div class="field"><label for="fLoc">'+esc(t('fLoc'))+'</label><select id="fLoc">'+opts(LOCS,'loc_',state.loc,t('allLocs'))+'</select></div></div>'+
+    '<div class="tchips" id="typeChips" role="group" aria-label="'+esc(t('fType'))+'">'+chips+'</div></section>'+
+    '<section aria-live="polite"><div class="rhead"><p class="count" id="count"></p><button type="button" class="linkbtn" id="clear" data-act="clear" hidden>'+esc(t('clear'))+'</button></div><div id="results"></div></section>';
+  return {html:html,after:updateList};
+}
+
+/* ---------- Job detail ---------- */
+function copyRow(label,value){
+  return '<div class="crow"><div class="cval"><span class="clabel">'+esc(label)+'</span><span class="val">'+esc(value)+'</span></div>'+
+    '<button type="button" class="btn ghost small" data-copy="'+esc(value)+'">'+esc(t('copy'))+'</button></div>';
+}
+function viewJob(id){
+  var job=state.jobs.filter(function(j){return j.id===id})[0];
+  var back='<a class="back" href="#jobs">'+esc(t('back'))+'</a>';
+  if(!job)return {html:back+'<div class="empty"><strong>'+esc(t('notFound'))+'</strong></div>'};
+  var n=daysLeft(job),closed=n<0;
+  var apply;
+  if(closed){
+    apply='<div class="notice">'+esc(t('closedNote'))+'</div>';
+  }else{
+    var rows='';
+    if(job.email)rows+=copyRow(t('lEmail'),job.email);
+    if(job.phone){
+      rows+=copyRow(t('lPhone'),job.phone);
+      var wa=waDigits(job.phone);
+      if(wa.length===12)rows+='<a class="btn ghost small block" href="https://wa.me/'+wa+'" target="_blank" rel="noopener noreferrer">'+esc(t('openWa'))+'</a>';
+    }
+    if(job.link&&/^https:\/\//i.test(job.link))rows+='<a class="btn block" href="'+esc(job.link)+'" target="_blank" rel="noopener noreferrer">'+esc(t('applyOnline'))+'</a>';
+    var shareText=job.title+' | '+job.company+' | '+t('loc_'+job.loc)+'\n'+t('deadline')+': '+fmtDate(job.deadline)+'\n'+location.href;
+    apply='<div class="dlbig'+(n<=3?' warn':'')+'"><span class="flabel">'+esc(t('deadline'))+'</span><span class="when">'+esc(fmtDate(job.deadline))+'</span><span class="pill">'+esc(closesText(n))+'</span></div>'+
+      '<div class="how"><h2>'+esc(t('howApply'))+'</h2>'+rows+'</div>'+
+      '<div class="share"><a class="btn ghost block" href="https://wa.me/?text='+encodeURIComponent(shareText)+'" target="_blank" rel="noopener noreferrer">'+esc(t('shareWa'))+'</a>'+
+      '<button type="button" class="btn ghost block" data-copy="'+esc(location.href)+'">'+esc(t('copyLink'))+'</button></div>';
+  }
+  var req=Array.isArray(job.req)?job.req:[];
+  var html=back+'<article><header class="jhead"><div class="tags"><span class="chip">'+esc(t('type_'+job.type))+'</span><span class="chip plain">'+esc(t('cat_'+job.cat))+'</span><span class="posted">'+esc(postedText(job))+'</span></div>'+
+    '<h1>'+esc(job.title)+'</h1><p class="company">'+esc(job.company)+' &middot; '+esc(t('loc_'+job.loc))+'</p></header>'+
+    '<div class="jgrid"><div class="sec"><h2>'+esc(t('about'))+'</h2>'+lines(job.desc).map(function(p){return '<p>'+esc(p)+'</p>'}).join('')+
+    (req.length?'<h2>'+esc(t('reqs'))+'</h2><ul>'+req.map(function(r){return '<li>'+esc(r)+'</li>'}).join('')+'</ul>':'')+
+    '</div><aside class="card apply">'+apply+'</aside></div></article>';
+  return {html:html};
+}
+
+/* ---------- Admin ---------- */
+var FIELDS=['fTitle','fCompany','fCat','fLoc','fType','fDeadline','fDesc','fReq','fEmail','fPhone','fLink'];
+function snap(){var o={};FIELDS.forEach(function(id){var e=document.getElementById(id);if(e)o[id]=e.value});return o}
+function restore(o){Object.keys(o).forEach(function(id){var e=document.getElementById(id);if(e)e.value=o[id]})}
+function val(id){var e=document.getElementById(id);return e?e.value.trim():''}
+function field(id,label,control,hint){
+  return '<div class="field"><label for="'+id+'">'+esc(label)+'</label>'+control+(hint?'<p class="hint">'+esc(hint)+'</p>':'')+'</div>';
+}
+function selectCtl(id,keys,prefix){
+  return '<select id="'+id+'"><option value="">'+esc(t('select'))+'</option>'+keys.map(function(k){return '<option value="'+k+'">'+esc(t(prefix+k))+'</option>'}).join('')+'</select>';
+}
+function syncFormMode(){
+  var editing=!!state.editingId;
+  var a=document.getElementById('formTitle'),b=document.getElementById('submitBtn'),c=document.getElementById('cancelEdit'),m=document.getElementById('formMsg');
+  if(a)a.textContent=t(editing?'formEdit':'formNew');
+  if(b)b.textContent=t(editing?'save':'publish');
+  if(c)c.hidden=!editing;
+  if(m)m.textContent='';
+}
+function fillForm(j){
+  var map={fTitle:j.title,fCompany:j.company,fCat:j.cat,fLoc:j.loc,fType:j.type,fDeadline:j.deadline,fDesc:j.desc,fReq:(j.req||[]).join('\n'),fEmail:j.email||'',fPhone:j.phone||'',fLink:j.link||''};
+  restore(map);
+}
+function adminRow(j){
+  var n=daysLeft(j),exp=n<0,conf=state.confirmDel===j.id;
+  return '<li class="arow"><div class="amain"><h3><a href="#job-'+j.id+'">'+esc(j.title)+'</a></h3>'+
+    '<p class="sub">'+esc(j.company)+' &middot; '+esc(t('loc_'+j.loc))+'</p>'+
+    '<p class="tags">'+(exp?'<span class="chip gone">'+esc(t('expired'))+'</span>':'<span class="pill">'+esc(closesText(n))+'</span>')+'<span class="posted">'+esc(fmtDate(j.deadline))+'</span></p></div>'+
+    '<div class="acts">'+(conf
+      ?'<button type="button" class="btn small dangerfill" data-act="delyes" data-id="'+j.id+'">'+esc(t('confirmDel'))+'</button><button type="button" class="btn small ghost" data-act="delno">'+esc(t('cancel'))+'</button>'
+      :'<button type="button" class="btn small ghost" data-act="edit" data-id="'+j.id+'">'+esc(t('edit'))+'</button><button type="button" class="btn small danger" data-act="del" data-id="'+j.id+'">'+esc(t('delete'))+'</button>')+
+    '</div></li>';
+}
+function renderAdminList(){
+  var box=document.getElementById('adminList');if(!box)return;
+  var list=state.jobs.slice().sort(byNewest);
+  box.innerHTML='<h2>'+esc(t('yourListings',{n:list.length}))+'</h2>'+(list.length?'<ul class="jobs">'+list.map(adminRow).join('')+'</ul>':'<div class="empty">'+esc(t('noListings'))+'</div>');
+}
+function viewAdmin(){
+  if(!state.unlocked){
+    return {html:'<section class="narrow"><h1 class="pg">'+esc(t('adminTitle'))+'</h1><form class="card form" id="pinForm" style="margin-top:16px" novalidate>'+
+      field('pin',t('pinLabel'),'<input id="pin" type="password" inputmode="numeric" autocomplete="off">')+
+      '<p class="msg" id="pinMsg" role="alert"></p><button class="btn" type="submit">'+esc(t('unlock'))+'</button></form></section>'};
+  }
+  var html='<div class="ahead"><h1 class="pg">'+esc(t('adminTitle'))+'</h1><button type="button" class="btn ghost small" data-act="lock">'+esc(t('lock'))+'</button></div>'+
+    '<p class="note">'+esc(t('previewNote'))+'</p>'+
+    '<form class="card form" id="jobForm" novalidate><h2 id="formTitle"></h2>'+
+    field('fTitle',t('lTitle'),'<input id="fTitle" type="text" maxlength="120" autocomplete="off">')+
+    field('fCompany',t('lCompany'),'<input id="fCompany" type="text" maxlength="100" autocomplete="off">')+
+    '<div class="row3">'+field('fCat',t('lCat'),selectCtl('fCat',CATS,'cat_'))+field('fLoc',t('lLoc'),selectCtl('fLoc',LOCS,'loc_'))+field('fType',t('lType'),selectCtl('fType',TYPES,'type_'))+'</div>'+
+    field('fDeadline',t('lDeadline'),'<input id="fDeadline" type="date">')+
+    field('fDesc',t('lDesc'),'<textarea id="fDesc" rows="5"></textarea>')+
+    field('fReq',t('lReq'),'<textarea id="fReq" rows="4"></textarea>',t('hReq'))+
+    '<div class="form"><span class="flabel">'+esc(t('lApply'))+' <span class="hint">('+esc(t('hApply'))+')</span></span>'+
+    '<div class="row3">'+field('fEmail',t('lEmail'),'<input id="fEmail" type="text" inputmode="email" autocomplete="off">')+field('fPhone',t('lPhone'),'<input id="fPhone" type="text" inputmode="tel" autocomplete="off">')+'</div>'+
+    field('fLink',t('lLink'),'<input id="fLink" type="text" inputmode="url" placeholder="https://" autocomplete="off">')+'</div>'+
+    '<p class="msg" id="formMsg" role="alert"></p>'+
+    '<div class="actions"><button class="btn" type="submit" id="submitBtn"></button><button class="btn ghost" type="button" id="cancelEdit" data-act="cancelEdit" hidden>'+esc(t('cancel'))+'</button></div></form>'+
+    '<section class="listing"><div id="adminList"></div></section>';
+  return {html:html,after:function(){syncFormMode();renderAdminList()}};
+}
+function submitJob(){
+  var v={title:val('fTitle'),company:val('fCompany'),cat:val('fCat'),loc:val('fLoc'),type:val('fType'),deadline:val('fDeadline'),desc:val('fDesc'),req:lines(val('fReq')),email:val('fEmail'),phone:val('fPhone'),link:val('fLink')};
+  var missing=[],errs=[];
+  if(!v.title)missing.push(t('lTitle'));
+  if(!v.company)missing.push(t('lCompany'));
+  if(!v.cat)missing.push(t('lCat'));
+  if(!v.loc)missing.push(t('lLoc'));
+  if(!v.type)missing.push(t('lType'));
+  if(!v.deadline)missing.push(t('lDeadline'));
+  if(!v.desc)missing.push(t('lDesc'));
+  if(missing.length)errs.push(t('errRequired',{fields:missing.join(', ')}));
+  if(!v.email&&!v.phone&&!v.link)errs.push(t('errApply'));
+  if(v.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))errs.push(t('errEmail'));
+  if(v.link&&!/^https:\/\//i.test(v.link))errs.push(t('errLink'));
+  if(v.deadline&&!state.editingId&&daysBetween(today0(),parseISO(v.deadline))<0)errs.push(t('errPast'));
+  var msg=document.getElementById('formMsg');
+  if(errs.length){msg.textContent=errs.join(' ');return}
+  var editing=!!state.editingId;
+  if(editing){
+    state.jobs=state.jobs.map(function(j){return j.id===state.editingId?{id:j.id,posted:j.posted,title:v.title,company:v.company,cat:v.cat,loc:v.loc,type:v.type,deadline:v.deadline,desc:v.desc,req:v.req,email:v.email,phone:v.phone,link:v.link}:j});
+  }else{
+    state.jobs.push({id:nextId(),posted:iso(today0()),title:v.title,company:v.company,cat:v.cat,loc:v.loc,type:v.type,deadline:v.deadline,desc:v.desc,req:v.req,email:v.email,phone:v.phone,link:v.link});
+  }
+  saveJobs();
+  state.editingId=null;state.confirmDel=null;
+  document.getElementById('jobForm').reset();
+  syncFormMode();renderAdminList();
+  toast(t(editing?'saved':'published'));
+}
+
+/* ---------- Render ---------- */
+var root=document.getElementById('root');
+function render(){
+  var r=route();
+  var view=r.name==='job'?viewJob(r.id):r.name==='admin'?viewAdmin():viewHome();
+  root.innerHTML=header(r)+'<main>'+view.html+'</main>'+footer();
+  if(view.after)view.after();
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click',function(e){
+  var el=e.target.closest?e.target.closest('[data-lang],[data-copy],[data-act],[data-type]'):null;
+  if(!el)return;
+  if(el.hasAttribute('data-lang')){
+    var next=el.getAttribute('data-lang');
+    if(next===state.lang)return;
+    var s=(route().name==='admin'&&state.unlocked)?snap():null;
+    state.lang=next;document.documentElement.lang=next;
+    try{localStorage.setItem(LANGKEY,next)}catch(x){}
+    render();if(s)restore(s);
+    return;
+  }
+  if(el.hasAttribute('data-copy')){copyText(el.getAttribute('data-copy'));return}
+  if(el.hasAttribute('data-type')&&el.closest('#typeChips')){
+    state.type=el.getAttribute('data-type');
+    var all=document.querySelectorAll('#typeChips .tchip');
+    for(var i=0;i<all.length;i++)all[i].setAttribute('aria-pressed',String(all[i].getAttribute('data-type')===state.type));
+    updateList();return;
+  }
+  var act=el.getAttribute('data-act'),id=parseInt(el.getAttribute('data-id'),10);
+  if(act==='clear'){
+    state.q='';state.cat='';state.loc='';state.type='';render();return;
+  }
+  if(act==='lock'){state.unlocked=false;state.editingId=null;state.confirmDel=null;render();return}
+  if(act==='edit'){
+    var j=state.jobs.filter(function(x){return x.id===id})[0];if(!j)return;
+    state.editingId=id;state.confirmDel=null;
+    fillForm(j);syncFormMode();renderAdminList();
+    var f=document.getElementById('jobForm');if(f&&f.scrollIntoView)f.scrollIntoView();
+    return;
+  }
+  if(act==='cancelEdit'){state.editingId=null;document.getElementById('jobForm').reset();syncFormMode();return}
+  if(act==='del'){state.confirmDel=id;renderAdminList();return}
+  if(act==='delno'){state.confirmDel=null;renderAdminList();return}
+  if(act==='delyes'){
+    state.jobs=state.jobs.filter(function(x){return x.id!==id});
+    if(state.editingId===id){state.editingId=null;document.getElementById('jobForm').reset();syncFormMode()}
+    state.confirmDel=null;saveJobs();renderAdminList();toast(t('deleted'));
+    return;
+  }
+});
+document.addEventListener('input',function(e){
+  if(e.target.id==='q'){state.q=e.target.value;updateList()}
+});
+document.addEventListener('change',function(e){
+  if(e.target.id==='fCat'&&document.getElementById('results')){state.cat=e.target.value;updateList()}
+  else if(e.target.id==='fLoc'&&document.getElementById('results')){state.loc=e.target.value;updateList()}
+});
+document.addEventListener('submit',function(e){
+  var id=e.target.id;
+  if(id==='searchForm'){e.preventDefault();var q=document.getElementById('q');if(q)q.blur();return}
+  if(id==='pinForm'){
+    e.preventDefault();
+    if(document.getElementById('pin').value.trim()===PIN){state.unlocked=true;render()}
+    else document.getElementById('pinMsg').textContent=t('wrongPin');
+    return;
+  }
+  if(id==='jobForm'){e.preventDefault();submitJob()}
+});
+window.addEventListener('hashchange',function(){window.scrollTo(0,0);render()});
+
+render();
+})();
+</script>
+
+</body></html>
